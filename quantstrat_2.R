@@ -233,7 +233,7 @@ myTheme$col$dn.border <- 'lightgray'
 myTheme$col$up.border <- 'lightgray'
 
 chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)",myTheme)
-chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2007-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
+chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
 
 ###############################################################################
 
