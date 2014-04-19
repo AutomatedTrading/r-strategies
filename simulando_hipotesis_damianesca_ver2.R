@@ -4,7 +4,7 @@ suppressWarnings(try(rm(list=ls()),silent=TRUE))
 
 ###
 # Poner la ruta donde se encuentran los datos
-path <- "C:/Users/luciano/Google Drive/time_series/simulacion_acciones"
+path <- "C:/Users/riosp/Google Drive/time_series/simulacion_acciones"
 
 forex.30min<-read.csv(paste(path,"forex.30min.csv",sep="/"), sep=",")
 
@@ -23,13 +23,13 @@ exchange_rate('GBPUSD', tick_size=0.0001)
 
 Sys.setenv(TZ="UTC")
 #
-# Defino el d�a de comienzo
+# Defino el día de comienzo
 #
 initDate = '2002-10-21'
 
 .from=initDate
-#.to='2002-10-26'
-.to='2008-07-04'
+.to='2002-10-26'
+#.to='2008-07-04'
 #.to='2003-12-31'
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
@@ -50,7 +50,7 @@ GBPUSD$Promedio <- (GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low 
 #Media del Retorno Medio
 media<-mean(GBPUSD$RetornoMedio[-1])
 
-#Desvio est�ndar del Retorno Medio
+#Desvio estándard del Retorno Medio
 desvio<-sd(GBPUSD$RetornoMedio[-1])
 
 #Valor Aleatorio a partir de la media y desvio del retorno medio
@@ -62,19 +62,19 @@ GBPUSD$Mayor <- GBPUSD$Lag * (1 + 4 * abs(GBPUSD$Rnorm))
 #Valor "Piso"
 GBPUSD$Menor <- GBPUSD$Lag * (1 - 1 * abs(GBPUSD$Rnorm))
 
-#Se�al de salida ("stop loss"), cuyo valor es verdadera si el promedio es menor que el valor "piso"
+#Señal de salida ("stop loss"), cuyo valor es verdadera si el promedio es menor que el valor "piso"
 GBPUSD$Sig_piso <- GBPUSD$Promedio < GBPUSD$Menor
 
-#Se�al de salida ("toma de ganancia"), cuyo valor es verdadero si el promedio es mayor que el valor "techo"
+#Señal de salida ("toma de ganancia"), cuyo valor es verdadero si el promedio es mayor que el valor "techo"
 GBPUSD$Sig_techo <- GBPUSD$Promedio > GBPUSD$Mayor
 
-#Se�al de mantener la posicion, cuyo valor es verdadero si el promedio es mayor que el valor "piso" y menor que el valor "techo"
+#Señal de mantener la posicion, cuyo valor es verdadero si el promedio es mayor que el valor "piso" y menor que el valor "techo"
 GBPUSD$Sig_hold_in <- GBPUSD$Promedio < GBPUSD$Mayor & GBPUSD$Promedio > GBPUSD$Menor
 
-#Se�al de mantenerse fuera, cuyo valor es verdadero si el promedio es menor que el valor "piso" o mayor que el valor "techo"
+#Señal de mantenerse fuera, cuyo valor es verdadero si el promedio es menor que el valor "piso" o mayor que el valor "techo"
 GBPUSD$Sig_hold_out <- GBPUSD$Promedio > GBPUSD$Mayor | GBPUSD$Promedio < GBPUSD$Menor
 
-#Se�al de "entrada" o compra de la accion, cuyo valor es verdadero si la se�al de mantener la posicion es verdadera (s�lo la 1era)
+#Señal de "entrada" o compra de la accion, cuyo valor es verdadero si la señal de mantener la posición es verdadera (sólo la 1era)
 GBPUSD$Sig_entrada <- !(Lag(GBPUSD$Sig_hold_in)) & GBPUSD$Sig_hold_in
 
 GBPUSD$Sig_salida <- !(Lag(GBPUSD$Sig_hold_out)) & GBPUSD$Sig_hold_out
@@ -95,7 +95,7 @@ costo <- 10
 
 #for (i in 2:nrow(GBPUSD)) {
 system.time(for (i in 2:nrow(GBPUSD)) {
-	#Mantener la posicion anterior cuando haya nulos en Se�al de entrada
+	#Mantener la posicion anterior cuando haya nulos en Señal de entrada
 	if (is.na(GBPUSD$Sig_entrada[i])) {
 		GBPUSD$Posicion_dinero[i] <- as.numeric(GBPUSD$Posicion_dinero[i-1])
 		GBPUSD$Posicion_acciones[i] <- as.numeric(GBPUSD$Posicion_acciones[i-1])
