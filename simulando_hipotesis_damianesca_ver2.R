@@ -28,8 +28,8 @@ Sys.setenv(TZ="UTC")
 initDate = '2002-10-21'
 
 .from=initDate
-.to='2002-10-26'
-#.to='2008-07-04'
+#.to='2002-10-26'
+.to='2008-07-04'
 #.to='2003-12-31'
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
