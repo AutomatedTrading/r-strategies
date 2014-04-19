@@ -38,9 +38,10 @@ GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
 ####
 #
 #Calculo el retorno diario a partir del promedio de valor de Apertura, Cierre, Valor Mayor y Valor Menor para c/30 minutos
-
+# La función ROC() es del package TTR
 GBPUSD$RetornoMedio <- ROC((GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low + GBPUSD$GBPUSD.Close) / 4 )
 
+# La función Lag() es del package quantmod
 #Precio promedio del periodo inmediato anterior
 GBPUSD$Lag <- Lag((GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low + GBPUSD$GBPUSD.Close) / 4)
 
