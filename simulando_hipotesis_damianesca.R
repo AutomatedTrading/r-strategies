@@ -30,8 +30,8 @@ Sys.setenv(TZ="UTC")
 initDate = '2002-10-21'
 
 .from=initDate
-.to='2003-02-26'
-#.to='2008-07-04'
+#.to='2003-02-26'
+.to='2008-07-04'
 #.to='2003-12-31'
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
@@ -50,6 +50,9 @@ GBPUSD$Lag <- Lag((GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low +
 #Precio promedio
 GBPUSD$Promedio <- (GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low + GBPUSD$GBPUSD.Close) / 4
 
+##
+## Como acceder a un objeto xts
+##
 # > class(GBPUSD$RetornoMedio)
 # [1] "xts" "zoo"
 
@@ -62,15 +65,19 @@ GBPUSD$Promedio <- (GBPUSD$GBPUSD.Open + GBPUSD$GBPUSD.High + GBPUSD$GBPUSD.Low 
 # > GBPUSD$RetornoMedio[2,1]
 # RetornoMedio
 # 2002-10-21 00:30:00 0.0004352978
-# > GBPUSD$RetornoMedio[[2]] == coredata(GBPUSD$RetornoMedio)[2]
+
+# > GBPUSD$RetornoMedio[[2]] es igual a coredata(GBPUSD$RetornoMedio)[2]
 # [1] 0.0004352978
 
-# > class(GBPUSD$RetornoMedio[[2,1]])
+# > class(GBPUSD$RetornoMedio[[2,1]]) es igual a GBPUSD[[2,"RetornoMedio"]]
 # [1] "numeric"
+
 # > GBPUSD[2,"RetornoMedio"]
 # RetornoMedio
 # 2002-10-21 00:30:00 0.0004352978
 
+# > GBPUSD[[2,"RetornoMedio"]]
+# [1] 0.0004352978
 
 #Media del Retorno Medio
 #media<-mean(GBPUSD$RetornoMedio[-1])
@@ -82,7 +89,9 @@ media<-mean(na.omit(GBPUSD$RetornoMedio))
 desvio<-sd(na.omit(GBPUSD$RetornoMedio))
 
 #Valor Aleatorio a partir de la media y desvio del retorno medio
-set.seed(123456)
+
+## setear semillas si queremos que el algoritmo sea reproducible (ej.: unit testing)
+## set.seed(123456)
 GBPUSD$Rnorm <- rnorm(nrow(GBPUSD),media, desvio)
 
 #Valor "techo"
@@ -130,27 +139,32 @@ costo <- 10
 
 N <- nrow(GBPUSD)
 system.time(for (i in 2:N) {
+  
+  posicion_promedio <- GBPUSD[[i,"Promedio"]]
+  posicion_acciones_antes <- GBPUSD[[i-1,"Posicion_acciones"]]
+  posicion_dinero_antes <- GBPUSD[[i-1,"Posicion_dinero"]]
+  
   #Se genera la compra de acciones
-	if (GBPUSD$Sig_entrada[[i]]==1 & estado==NO_COMPRA) {
-	  GBPUSD$Posicion_acciones[[i]] <- GBPUSD$Posicion_acciones[[i-1]] + trunc((GBPUSD$Posicion_dinero[[i-1]] - costo) / GBPUSD$Promedio[[i]], 0)
-	  GBPUSD$Posicion_dinero[[i]] <- GBPUSD$Posicion_dinero[[i-1]] - costo - GBPUSD$Posicion_acciones[[i]] * GBPUSD$Promedio[[i]]
+	if (GBPUSD[[i,"Sig_entrada"]]==1 & estado==NO_COMPRA) {
+	  GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes + trunc((posicion_dinero_antes - costo) / posicion_promedio, 0)
+	  GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes - costo - GBPUSD[[i,"Posicion_acciones"]] * posicion_promedio
 	  estado <- COMPRA
-	  GBPUSD$Decision[[i]] <- COMPRA
+	  GBPUSD[[i,"Decision"]] <- COMPRA
 	}
 	#Se genera la venta de acciones
   
-  if (GBPUSD$Sig_salida[[i]]==1 & estado==COMPRA) {
-	  GBPUSD$Posicion_dinero[[i]] <- GBPUSD$Posicion_dinero[[i-1]] - costo + GBPUSD$Posicion_acciones[[i-1]] * GBPUSD$Promedio[[i]]
-	  GBPUSD$Posicion_acciones[[i]] <- 0
-	  if (GBPUSD$Sig_techo[[i]]==1) {GBPUSD$Decision[[i]] <- VENTA_TECHO} 
-	  else if (GBPUSD$Sig_piso[[i]]==1) {GBPUSD$Decision[[i]] <- VENTA_PISO} 
+  if (GBPUSD[[i,"Sig_salida"]]==1 & estado==COMPRA) {
+    GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes - costo + posicion_acciones_antes * posicion_promedio
+	  GBPUSD[[i,"Posicion_acciones"]] <- 0
+	  if (GBPUSD[[i,"Sig_techo"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_TECHO} 
+	  else if (GBPUSD[[i,"Sig_piso"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_PISO} 
 	  #resetear el flag de compra
 	  estado <- NO_COMPRA
 	}
 	
-	if (GBPUSD$Decision[[i]] == NO_COMPRA) {
-	  GBPUSD$Posicion_acciones[[i]] <- GBPUSD$Posicion_acciones[[i-1]]
-	  GBPUSD$Posicion_dinero[[i]] <- GBPUSD$Posicion_dinero[[i-1]]
+	if (GBPUSD[[i,"Decision"]] == NO_COMPRA) {
+	  GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes
+	  GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes
 	}
 })
 
