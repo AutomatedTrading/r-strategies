@@ -139,32 +139,32 @@ costo <- 10
 
 N <- nrow(GBPUSD)
 system.time(for (i in 2:N) {
-  
+
   posicion_promedio <- GBPUSD[[i,"Promedio"]]
   posicion_acciones_antes <- GBPUSD[[i-1,"Posicion_acciones"]]
   posicion_dinero_antes <- GBPUSD[[i-1,"Posicion_dinero"]]
-  
+
   #Se genera la compra de acciones
 	if (GBPUSD[[i,"Sig_entrada"]]==1 & estado==NO_COMPRA) {
-	  GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes + trunc((posicion_dinero_antes - costo) / posicion_promedio, 0)
-	  GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes - costo - GBPUSD[[i,"Posicion_acciones"]] * posicion_promedio
-	  estado <- COMPRA
-	  GBPUSD[[i,"Decision"]] <- COMPRA
+    GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes + trunc((posicion_dinero_antes - costo) / posicion_promedio, 0)
+    GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes - costo - GBPUSD[[i,"Posicion_acciones"]] * posicion_promedio
+    estado <- COMPRA
+    GBPUSD[[i,"Decision"]] <- COMPRA
 	}
-	#Se genera la venta de acciones
-  
+
+  #Se genera la venta de acciones
   if (GBPUSD[[i,"Sig_salida"]]==1 & estado==COMPRA) {
     GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes - costo + posicion_acciones_antes * posicion_promedio
-	  GBPUSD[[i,"Posicion_acciones"]] <- 0
-	  if (GBPUSD[[i,"Sig_techo"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_TECHO} 
-	  else if (GBPUSD[[i,"Sig_piso"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_PISO} 
-	  #resetear el flag de compra
-	  estado <- NO_COMPRA
+    GBPUSD[[i,"Posicion_acciones"]] <- 0
+    if (GBPUSD[[i,"Sig_techo"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_TECHO} 
+    else if (GBPUSD[[i,"Sig_piso"]]==1) {GBPUSD[[i,"Decision"]] <- VENTA_PISO} 
+    #resetear el flag de compra
+    estado <- NO_COMPRA
 	}
-	
+
 	if (GBPUSD[[i,"Decision"]] == NO_COMPRA) {
-	  GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes
-	  GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes
+    GBPUSD[[i,"Posicion_acciones"]] <- posicion_acciones_antes
+    GBPUSD[[i,"Posicion_dinero"]] <- posicion_dinero_antes
 	}
 })
 
