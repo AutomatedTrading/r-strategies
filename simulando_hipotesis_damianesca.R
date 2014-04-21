@@ -1,3 +1,5 @@
+rm(list=ls())
+
 library(quantstrat)
 
 suppressWarnings(try(rm(list=ls()),silent=TRUE))
@@ -28,8 +30,8 @@ Sys.setenv(TZ="UTC")
 initDate = '2002-10-21'
 
 .from=initDate
-#.to='2003-10-26'
-.to='2008-07-04'
+.to='2003-02-26'
+#.to='2008-07-04'
 #.to='2003-12-31'
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
@@ -80,6 +82,7 @@ media<-mean(na.omit(GBPUSD$RetornoMedio))
 desvio<-sd(na.omit(GBPUSD$RetornoMedio))
 
 #Valor Aleatorio a partir de la media y desvio del retorno medio
+set.seed(123456)
 GBPUSD$Rnorm <- rnorm(nrow(GBPUSD),media, desvio)
 
 #Valor "techo"
@@ -118,7 +121,6 @@ estado <- NO_COMPRA
 #
 GBPUSD$Posicion_dinero <- 0
 GBPUSD$Posicion_acciones <- 0
-GBPUSD$Decision <- NA
 
 #Dinero y acciones en la cuenta al inicio
 GBPUSD$Posicion_dinero[[1]] <- 100000
@@ -126,7 +128,8 @@ GBPUSD$Posicion_acciones[[1]] <- 0
 GBPUSD$Decision <- NO_COMPRA
 costo <- 10
 
-system.time(for (i in 2:nrow(GBPUSD)) {
+N <- nrow(GBPUSD)
+system.time(for (i in 2:N) {
   #Se genera la compra de acciones
 	if (GBPUSD$Sig_entrada[[i]]==1 & estado==NO_COMPRA) {
 	  GBPUSD$Posicion_acciones[[i]] <- GBPUSD$Posicion_acciones[[i-1]] + trunc((GBPUSD$Posicion_dinero[[i-1]] - costo) / GBPUSD$Promedio[[i]], 0)
@@ -134,9 +137,9 @@ system.time(for (i in 2:nrow(GBPUSD)) {
 	  estado <- COMPRA
 	  GBPUSD$Decision[[i]] <- COMPRA
 	}
-  
 	#Se genera la venta de acciones
-	if (GBPUSD$Sig_salida[[i]]==1 & estado==COMPRA) {
+  
+  if (GBPUSD$Sig_salida[[i]]==1 & estado==COMPRA) {
 	  GBPUSD$Posicion_dinero[[i]] <- GBPUSD$Posicion_dinero[[i-1]] - costo + GBPUSD$Posicion_acciones[[i-1]] * GBPUSD$Promedio[[i]]
 	  GBPUSD$Posicion_acciones[[i]] <- 0
 	  if (GBPUSD$Sig_techo[[i]]==1) {GBPUSD$Decision[[i]] <- VENTA_TECHO} 
@@ -155,4 +158,4 @@ system.time(for (i in 2:nrow(GBPUSD)) {
 plot.xts(GBPUSD[GBPUSD$Posicion_acciones == 0]$Posicion_dinero)
 charts.TimeSeries(GBPUSD[GBPUSD$Posicion_acciones == 0]$Posicion_dinero)
 
-write.zoo(GBPUSD, file="resultado.csv", na = "", sep=",")
+#write.zoo(GBPUSD, file="resultado.csv", na = "", sep=",")
