@@ -13,7 +13,7 @@ library(quantstrat)
 # cargo el archivo minuto a minuto para poder cambiar la escala (1 min, 5 min, 15 min, 30 min, 1 hora, etc.)
 path <- "C:/Users/riosp/Downloads/GBPUSD"
 #forex.1M<-read.csv(paste(path,"DAT_GBPUSD_M1_2002_2008.csv",sep="/"), sep=";", header=FALSE)
-system.time(forex.1M<-read.csv(unz(paste(path,"DAT_GBPUSD_M1_2002_2008.zip",sep="/"),"DAT_GBPUSD_M1_2002_2008.csv"), sep=";", header=FALSE))
+forex.1M<-read.csv(unz(paste(path,"DAT_GBPUSD_M1_2002_2008.zip",sep="/"),"DAT_GBPUSD_M1_2002_2008.csv"), sep=";", header=FALSE)
 forex.1M<-as.xts(zoo(forex.1M[,c(2:5)]),as.POSIXct(forex.1M[,c(1)], "%Y%m%d %H%M%S", tz="UTC"))
 
 #
