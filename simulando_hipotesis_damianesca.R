@@ -42,7 +42,8 @@ applyStrategy <- function(.from, .to, .piso, .techo, .minutes) {
   GBPUSD$Promedio <- (GBPUSD$Open + GBPUSD$High + GBPUSD$Low + GBPUSD$Close) / 4
   
   #Calculo el retorno diario a partir del promedio de valor de Apertura, Cierre, Valor Mayor y Valor Menor para c/30 minutos
-  # La función ROC() es del package TTR
+  # La función ROC() es del package TTR. The ROC indicator provides the percentage difference
+  # of a series over two observations
   GBPUSD$RetornoMedio <- ROC(GBPUSD$Promedio)
   
   # La función Lag() es del package quantmod
@@ -91,13 +92,13 @@ applyStrategy <- function(.from, .to, .piso, .techo, .minutes) {
   
   ## setear semillas si queremos que el algoritmo sea reproducible (ej.: unit testing)
   ## set.seed(123456)
-  GBPUSD$Rnorm <- rnorm(nrow(GBPUSD),media, desvio)
+  GBPUSD$rnorm <- rnorm(nrow(GBPUSD),media, desvio)
   
   #Valor "techo"
-  GBPUSD$Mayor <- GBPUSD$Lag * (1 + .techo * abs(GBPUSD$Rnorm))
+  GBPUSD$Mayor <- GBPUSD$Lag * (1 + .techo * abs(GBPUSD$rnorm))
   
   #Valor "Piso"
-  GBPUSD$Menor <- GBPUSD$Lag * (1 - .piso * abs(GBPUSD$Rnorm))
+  GBPUSD$Menor <- GBPUSD$Lag * (1 - .piso * abs(GBPUSD$rnorm))
   
   #Señal de salida ("stop loss"), cuyo valor es verdadera si el promedio es menor que el valor "piso"
   GBPUSD$Sig_piso <- GBPUSD$Promedio < GBPUSD$Menor
@@ -176,7 +177,7 @@ graficarPosicionDinero <- function(ts, n) {
       column_posicion_acciones = paste0("Posicion_acciones.",i)
       column_posicion_dinero = paste0("Posicion_dinero.",i)
     }
-    charts.TimeSeries(ts[ts[,column_posicion_acciones] == 0,column_posicion_dinero])
+    chart.TimeSeries(ts[ts[,column_posicion_acciones] == 0,column_posicion_dinero])
   }
 }
 
@@ -185,7 +186,7 @@ graficarPosicionDinero <- function(ts, n) {
 .piso=1
 .techo=4
 .minutes=30
-N_RANDOM_WALKS <- 10
+N_RANDOM_WALKS <- 3
 
 ts <- NULL
 results.df <- data.frame()
@@ -205,5 +206,6 @@ names(results.df) <- c("compras","ventas piso","ventas techo","posicion final")
 View(results.df)
 
 graficarPosicionDinero(ts, N_RANDOM_WALKS)
+charts.PerformanceSummary(GBPUSD$RetornoMedio)
 
 #write.zoo(GBPUSD, file="resultado.csv", na = "", sep=",")
