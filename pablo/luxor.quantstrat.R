@@ -14,8 +14,8 @@ forex.30min<-as.xts(zoo(forex.30min[,c(2:5)]),as.POSIXct(forex.30min[,c(1)]))
 
 names(forex.30min)<-c("GBPUSD.Open", "GBPUSD.High", "GBPUSD.Low", "GBPUSD.Close")
 
-GBPUSD = to.minutes30(GBPUSD)
-GBPUSD = align.time(forex.30min, 1800)
+GBPUSD = to.minutes30(forex.30min)
+GBPUSD = align.time(GBPUSD, 1800)
 
 #
 #
@@ -26,14 +26,14 @@ exchange_rate('GBPUSD', tick_size=0.0001)
 
 Sys.setenv(TZ="UTC")
 #
-# Defino el d?a de comienzo
+# Defino el día de comienzo
 #
 initDate = '2002-10-21'
 
 .from=initDate
 #.to='2002-10-26'
-#.to='2008-07-04'
-.to='2002-10-31' # fecha que usa el demo de quantstrat
+.to='2008-07-04'
+#.to='2002-10-31' # fecha que usa el demo de quantstrat
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
 
@@ -49,8 +49,8 @@ account.st = 'invertironline'
 ###
 #
 #Defino la cantidad que tiene la cuenta al inicio
-#Defino el valor para el umbral que usar? en la aplicaci?n de las reglas
-#Defino el costo de la transacci?n (simpre valores negativos)
+#Defino el valor para el umbral que usaré en la aplicación de las reglas
+#Defino el costo de la transacción (simpre valores negativos)
 #
 
 .orderqty = 100000
@@ -62,8 +62,8 @@ account.st = 'invertironline'
 #Defino las medias corta y larga segun 1er ejemplo del libro
 #
 
-.fast = 10
-.slow = 30
+.fast = 20
+.slow = 32
 
 ###
 #
@@ -224,6 +224,7 @@ add.rule(strategy.st, name='ruleSignal',
 applyStrategy(strategy.st, portfolio.st)
 
 View(getOrderBook(portfolio.st)[[portfolio.st]]$GBPUSD)
+View(getOrderBook(portfolio.st)$forex$GBPUSD)
 
 ###############################################################################
 
@@ -237,6 +238,16 @@ myTheme$col$up.border <- 'lightgray'
 chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
 #chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
 
+View(t(tradeStats(portfolio.st, 'GBPUSD')))
+View(perTradeStats(portfolio.st, 'GBPUSD'))
+pf <- getPortfolio(portfolio.st)
+View(pf$symbols$GBPUSD$txn)
+View(pf$symbols$GBPUSD$posPL)
+mk <- mktdata['2002-10-23 15:00::2002-10-24 03:00']
+View(mk)
+
+chart.TimeSeries(cumsum(pf$symbols$GBPUSD$posPL$Net.Trading.PL))
+
 # See Also
 # perTradeStats for the calculations used by this chart, and
 # tradeStats for a summary view of the performance
@@ -244,44 +255,44 @@ chart.ME(portfolio.st,'GBPUSD',type='MAE',scale='percent')
 
 ###############################################################################
 
-ob <- getOrderBook(portfolio.st)$forex$GBPUSD
-ob.df <- data.frame(Date=time(ob), ob)
-write.csv(ob.df,"ob.csv")
-PerformanceAnalytics:::textplot(ob.df, show.rownames=F)
-
-View(t(tradeStats(portfolio.st, 'GBPUSD')))
-write.csv(tradeStats(portfolio.st, 'GBPUSD'),"tradeStats.csv")
-PerformanceAnalytics:::textplot(t(tradeStats(portfolio.st, 'GBPUSD')))
-
-View(perTradeStats(portfolio.st, 'GBPUSD'))
-write.csv(perTradeStats(portfolio.st, 'GBPUSD'),'perTradeStats.csv')
-
-mk<-data.frame(index(mktdata), coredata(mktdata))
-write.csv(mk, 'mktdata.csv')
-
-View(pf$symbols$GBPUSD$txn)
-df<-data.frame(check.names=FALSE, date=time(pf$symbols$GBPUSD$txn), pf$symbols$GBPUSD$txn)
-write.csv(df, 'txn.csv')
-
-# pf$symbols$GBPUSD$posPL contains same info as pf$symbols$GBPUSD$posPL.USD, in this case
-df<-data.frame(check.names=FALSE, date=time(pf$symbols$GBPUSD$posPL), pf$symbols$GBPUSD$posPL)
-write.csv(df, 'posPL.csv')
-
-# no hace falta agregar la columna date al data frame
-df<-data.frame(check.names=FALSE, pf$summary)
-write.csv(df, 'summary.csv')
-
-mk <- mktdata['2002-10-23 15:00::2002-10-24 03:00']
-# no tiene ningun efecto llamar a coredata()
-mk.df <- data.frame(Date=time(mk), coredata(mk))
-PerformanceAnalytics:::textplot(mk.df,show.rownames=F)
-
-# listar los objetos de los R environments .blotter y .strategy 
-ls(.blotter)
-ls(.strategy)
-
-# obtener la estrategia
-st<-getStrategy(strategy.st)
+# ob <- getOrderBook(portfolio.st)$forex$GBPUSD
+# ob.df <- data.frame(Date=time(ob), ob)
+# write.csv(ob.df,"ob.csv")
+# PerformanceAnalytics:::textplot(ob.df, show.rownames=F)
+# 
+# View(t(tradeStats(portfolio.st, 'GBPUSD')))
+# write.csv(tradeStats(portfolio.st, 'GBPUSD'),"tradeStats.csv")
+# PerformanceAnalytics:::textplot(t(tradeStats(portfolio.st, 'GBPUSD')))
+# 
+# View(perTradeStats(portfolio.st, 'GBPUSD'))
+# write.csv(perTradeStats(portfolio.st, 'GBPUSD'),'perTradeStats.csv')
+# 
+# mk<-data.frame(index(mktdata), coredata(mktdata))
+# write.csv(mk, 'mktdata.csv')
+# 
+# View(pf$symbols$GBPUSD$txn)
+# df<-data.frame(check.names=FALSE, date=time(pf$symbols$GBPUSD$txn), pf$symbols$GBPUSD$txn)
+# write.csv(df, 'txn.csv')
+# 
+# # pf$symbols$GBPUSD$posPL contains same info as pf$symbols$GBPUSD$posPL.USD, in this case
+# df<-data.frame(check.names=FALSE, date=time(pf$symbols$GBPUSD$posPL), pf$symbols$GBPUSD$posPL)
+# write.csv(df, 'posPL.csv')
+# 
+# # no hace falta agregar la columna date al data frame
+# df<-data.frame(check.names=FALSE, pf$summary)
+# write.csv(df, 'summary.csv')
+# 
+# mk <- mktdata['2002-10-23 15:00::2002-10-24 03:00']
+# # no tiene ningun efecto llamar a coredata()
+# mk.df <- data.frame(Date=time(mk), coredata(mk))
+# PerformanceAnalytics:::textplot(mk.df,show.rownames=F)
+# 
+# # listar los objetos de los R environments .blotter y .strategy 
+# ls(.blotter)
+# ls(.strategy)
+# 
+# # obtener la estrategia
+# st<-getStrategy(strategy.st)
 
 Sys.setenv(TZ=oldTZ)
 ###############################################################################
@@ -295,33 +306,6 @@ Sys.setenv(TZ=oldTZ)
 # stats = tradeStats(port)
 # rets  = PortfReturns(acct)
 ################################################################
-
-
-
-
-#Perlitas:
-# getPortfolio(nombre_portfolio$symbols$txn)
-# getPortfolio(nombre_portfolio$symbols$posPL)
-
-# cumsum(posPL$Net.Trading.PL)
-
-# p = getPortfolio(portfolio.st)
-
-# head(p$symbols$GBPUSD$txn)
-
-# head(p$symbols$GBPUSD$posPL)
-
-# min(p$symbols$GBPUSD$posPL[,c(11)])
-# -2386
-
-# time(p$symbols$GBPUSD$posPL[,c(11)][p$symbols$GBPUSD$posPL[,c(11)]==min(p$symbols$GBPUSD$posPL[,c(11)])])
-# "2006-04-27 13:30:00 UTC"
-
-# max(p$symbols$GBPUSD$posPL[,c(11)])
-
-# 2570
-
-# chart.TimeSeries(cumsum(p$symbols$GBPUSD$posPL[,c(11)]))
 
 # 
 # 2da parte
@@ -404,5 +388,8 @@ stats <- results$tradeStats
 idx <- order(stats[,1],stats[,2])
 stats <- stats[idx,]
 View(stats)
+View(stats[stats$End.Equity > 0,])
 View(t(stats)[,1:10])
 
+# los parámetros .fast y .slow que terminaron con ganancia > 0 (End.Equity) y el menor DrawDown son:
+# .fast/.slow = 3/68, 5/61 y 20/32
