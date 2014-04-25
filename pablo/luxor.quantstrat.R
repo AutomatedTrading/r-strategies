@@ -14,6 +14,7 @@ forex.30min<-as.xts(zoo(forex.30min[,c(2:5)]),as.POSIXct(forex.30min[,c(1)]))
 
 names(forex.30min)<-c("GBPUSD.Open", "GBPUSD.High", "GBPUSD.Low", "GBPUSD.Close")
 
+GBPUSD = to.minutes30(GBPUSD)
 GBPUSD = align.time(forex.30min, 1800)
 
 #
@@ -31,7 +32,8 @@ initDate = '2002-10-21'
 
 .from=initDate
 #.to='2002-10-26'
-.to='2008-07-04'
+#.to='2008-07-04'
+.to='2002-10-31' # fecha que usa el demo de quantstrat
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
 
@@ -232,8 +234,13 @@ myTheme$col$dn.col<-'lightblue'
 myTheme$col$dn.border <- 'lightgray'
 myTheme$col$up.border <- 'lightgray'
 
-chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)",myTheme)
-chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
+chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
+#chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
+
+# See Also
+# perTradeStats for the calculations used by this chart, and
+# tradeStats for a summary view of the performance
+chart.ME(portfolio.st,'GBPUSD',type='MAE',scale='percent')
 
 ###############################################################################
 
@@ -276,10 +283,6 @@ ls(.strategy)
 # obtener la estrategia
 st<-getStrategy(strategy.st)
 
-# See Also
-# perTradeStats for the calculations used by this chart
-chart.ME(portfolio.st,'GBPUSD',type='MAE',scale='percent')
-
 Sys.setenv(TZ=oldTZ)
 ###############################################################################
 
@@ -319,3 +322,87 @@ Sys.setenv(TZ=oldTZ)
 # 2570
 
 # chart.TimeSeries(cumsum(p$symbols$GBPUSD$posPL[,c(11)]))
+
+# 
+# 2da parte
+# 
+### Distributions for paramset analysis
+
+.nsamples=80
+
+.FastSMA = (1:20)
+.SlowSMA = (30:80)
+
+.StopLoss = seq(0.05, 2.4, length.out=48)/100
+.StopTrailing = seq(0.05, 2.4, length.out=48)/100
+.TakeProfit = seq(0.1, 4.8, length.out=48)/100
+
+.FastWFA = c(1, 3, 5, 7, 9)
+.SlowWFA = c(42, 44, 46)
+
+add.distribution(strategy.st,
+                 paramset.label = 'SMA',
+                 component.type = 'indicator',
+                 component.label = 'nFast',
+                 variable = list(n = .FastSMA),
+                 label = 'nFAST'
+)
+
+add.distribution(strategy.st,
+                 paramset.label = 'SMA',
+                 component.type = 'indicator',
+                 component.label = 'nSlow',
+                 variable = list(n = .SlowSMA),
+                 label = 'nSLOW'
+)
+
+# it is not add.constraint()
+add.distribution.constraint(strategy.st,
+                            paramset.label = 'SMA',
+                            distribution.label.1 = 'nFAST',
+                            distribution.label.2 = 'nSLOW',
+                            operator = '<',
+                            label = 'SMA'
+)
+
+rm.strat(portfolio.st)
+rm.strat(account.st)
+
+initPortf(portfolio.st, symbols='GBPUSD', initDate=initDate, currency='USD')
+initAcct(account.st, portfolios=portfolio.st,
+         initDate=initDate, currency='USD')
+initOrders(portfolio.st, initDate=initDate)
+
+library(parallel)
+detectCores()
+
+if( Sys.info()['sysname'] == "Windows" )
+{
+  library(doParallel)
+  registerDoParallel(cores=detectCores())
+}
+
+foreach(i=1:8, .combine=c) %dopar% sqrt(i)
+
+if( Sys.info()['sysname'] == "Windows" )
+{
+  registerDoSEQ()
+}
+
+if( Sys.info()['sysname'] == "Windows" )
+{
+  if(file.exists("resultsMAOpt.RData"))
+  {
+    load("resultsMAOpt.RData")
+  } else {
+    results <- apply.paramset(strategy.st, paramset.label='SMA', portfolio.st=portfolio.st, account.st=account.st, nsamples=.nsamples, verbose=TRUE)
+  }
+}
+
+stats <- results$tradeStats
+#print(stats)
+idx <- order(stats[,1],stats[,2])
+stats <- stats[idx,]
+View(stats)
+View(t(stats)[,1:10])
+
