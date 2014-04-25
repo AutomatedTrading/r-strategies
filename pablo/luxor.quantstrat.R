@@ -32,8 +32,8 @@ initDate = '2002-10-21'
 
 .from=initDate
 #.to='2002-10-26'
-.to='2008-07-04'
-#.to='2002-10-31' # fecha que usa el demo de quantstrat
+#.to='2008-07-04'
+.to='2002-10-31' # fecha que usa el demo de quantstrat
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
 
@@ -224,7 +224,7 @@ add.rule(strategy.st, name='ruleSignal',
 applyStrategy(strategy.st, portfolio.st)
 
 View(getOrderBook(portfolio.st)[[portfolio.st]]$GBPUSD)
-View(getOrderBook(portfolio.st)$forex$GBPUSD)
+# View(getOrderBook(portfolio.st)$forex$GBPUSD)
 
 ###############################################################################
 
@@ -307,9 +307,9 @@ Sys.setenv(TZ=oldTZ)
 # rets  = PortfReturns(acct)
 ################################################################
 
-# 
-# 2da parte
-# 
+### 
+### 2da parte (optimización en quantstrat)
+### 
 ### Distributions for paramset analysis
 
 .nsamples=80
@@ -366,22 +366,14 @@ if( Sys.info()['sysname'] == "Windows" )
   registerDoParallel(cores=detectCores())
 }
 
-foreach(i=1:8, .combine=c) %dopar% sqrt(i)
+system.time(foreach(i=1:80, .combine=c) %dopar% sqrt(i))
 
 if( Sys.info()['sysname'] == "Windows" )
 {
   registerDoSEQ()
 }
 
-if( Sys.info()['sysname'] == "Windows" )
-{
-  if(file.exists("resultsMAOpt.RData"))
-  {
-    load("resultsMAOpt.RData")
-  } else {
-    results <- apply.paramset(strategy.st, paramset.label='SMA', portfolio.st=portfolio.st, account.st=account.st, nsamples=.nsamples, verbose=TRUE)
-  }
-}
+results <- apply.paramset(strategy.st, paramset.label='SMA', portfolio.st=portfolio.st, account.st=account.st, nsamples=.nsamples, verbose=TRUE)
 
 stats <- results$tradeStats
 #print(stats)
@@ -393,3 +385,50 @@ View(t(stats)[,1:10])
 
 # los parámetros .fast y .slow que terminaron con ganancia > 0 (End.Equity) y el menor DrawDown son:
 # .fast/.slow = 3/68, 5/61 y 20/32
+
+# net profit
+z <- tapply(X=stats[,"End.Equity"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
+z[1:5,1:10]
+x <- as.numeric(rownames(z))
+y <- as.numeric(colnames(z))
+filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
+title("Net Profit")
+
+# max draw down
+z <- tapply(X=stats[,"Max.Drawdown"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
+x <- as.numeric(rownames(z))
+y <- as.numeric(colnames(z))
+filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
+title("Max Drawdown")
+
+# profit factor
+z <- tapply(X=stats[,"Profit.Factor"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
+x <- as.numeric(rownames(z))
+y <- as.numeric(colnames(z))
+filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
+title("Profit Factor")
+
+# avg trade P&L
+z <- tapply(X=stats[,"Avg.Trade.PL"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
+x <- as.numeric(rownames(z))
+y <- as.numeric(colnames(z))
+filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
+title("Average Trade")
+
+# return to maxdd
+z <- tapply(X=stats[,"Profit.To.Max.Draw"],
+            INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
+x <- as.numeric(rownames(z))
+y <- as.numeric(colnames(z))
+filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
+title("Return to Max Drawdown")
+
+rmdd <- stats$Profit.To.Max.Draw
+idx <- order(rmdd,decreasing=T)[1:30]
+labs <- paste(stats$nFAST[idx],stats$nSLOW[idx],sep="/")
+barplot(rmdd[idx],names.arg=labs,col=4,las=2,main="Return to MaxDrawdown")
+
+###
+### parte 3) - Stoploss orders
+###
+### To implement stop-loss or trailing-stop orders, quantstrat utilizes the concept of ordersets and order chains
