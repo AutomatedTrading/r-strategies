@@ -1,4 +1,3 @@
-# review with Damian
 library(quantstrat)
 
 #suppressWarnings(try(rm(list=ls()),silent=TRUE))
