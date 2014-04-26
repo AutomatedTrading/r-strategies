@@ -1,0 +1,106 @@
+> require(devtools)
+Loading required package: devtools
+
+Attaching package: ‘devtools’
+
+The following objects are masked from ‘package:utils’:
+
+    ?, help
+
+The following object is masked from ‘package:base’:
+
+    system.file
+
+> install_bitbucket("rugarch","alexiosg")
+Installing bitbucket repo(s) rugarch/master from alexiosg
+Downloading master.zip from https://bitbucket.org/alexiosg/rugarch/get/master.zip
+Installing package from C:\Users\riosp\AppData\Local\Temp\RtmpIT40TJ/master.zip
+Installing rugarch
+"C:/PROGRA~1/R/R-30~1.3/bin/x64/R" --vanilla CMD build  \
+  "C:\Users\riosp\AppData\Local\Temp\RtmpIT40TJ\devtools1cb831436630\alexiosg-rugarch-c9f62a179cc4" --no-manual  \
+  --no-resave-data 
+
+* checking for file 'C:\Users\riosp\AppData\Local\Temp\RtmpIT40TJ\devtools1cb831436630\alexiosg-rugarch-c9f62a179cc4/DESCRIPTION' ... OK
+* preparing 'rugarch':
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+* installing the package to build vignettes
+* creating vignettes ... OK
+* cleaning src
+* checking for LF line-endings in source and make files
+* checking for empty or unneeded directories
+* looking to see if a 'data/datalist' file should be added
+* building 'rugarch_1.3-2.tar.gz'
+
+"C:/PROGRA~1/R/R-30~1.3/bin/x64/R" --vanilla CMD INSTALL  \
+  "C:\Users\riosp\AppData\Local\Temp\RtmpIT40TJ/rugarch_1.3-2.tar.gz"  \
+  --library="C:/Users/riosp/Documents/R/win-library/3.0" --install-tests 
+
+* installing *source* package 'rugarch' ...
+** libs
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c distributions.c -o distributions.o
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c filters.c -o filters.o
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c fracdiff.c -o fracdiff.o
+gfortran -m64     -O2  -mtune=core2 -c fracimport.f -o fracimport.o
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c garchmodels.c -o garchmodels.o
+g++ -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -mtune=core2 -c garchsim.cpp -o garchsim.o
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c gig.c -o gig.o
+gcc -m64 -I"C:/PROGRA~1/R/R-30~1.3/include" -DNDEBUG    -I"C:/Users/riosp/Documents/R/win-library/3.0/Rcpp/include" -I"C:/Users/riosp/Documents/R/win-library/3.0/RcppArmadillo/include" -I"d:/RCompile/CRANpkg/extralibs64/local/include"     -O2 -Wall  -std=gnu99 -mtune=core2 -c nig.c -o nig.o
+g++ -m64 -shared -s -static-libgcc -o rugarch.dll tmp.def distributions.o filters.o fracdiff.o fracimport.o garchmodels.o garchsim.o gig.o nig.o -LC:/PROGRA~1/R/R-30~1.3/bin/x64 -lRlapack -LC:/PROGRA~1/R/R-30~1.3/bin/x64 -lRblas -lgfortran -Ld:/RCompile/CRANpkg/extralibs64/local/lib/x64 -Ld:/RCompile/CRANpkg/extralibs64/local/lib -lgfortran -LC:/PROGRA~1/R/R-30~1.3/bin/x64 -lR
+installing to C:/Users/riosp/Documents/R/win-library/3.0/rugarch/libs/x64
+** R
+** data
+** inst
+** preparing package for lazy loading
+Creating a generic function from function 'ugarchspec' in package 'rugarch'
+Creating a generic function from function 'getspec' in package 'rugarch'
+Creating a generic function from function 'ugarchfilter' in package 'rugarch'
+Creating a generic function from function 'ugarchfit' in package 'rugarch'
+Creating a generic function from function 'ugarchforecast' in package 'rugarch'
+Creating a generic function from function 'ugarchsim' in package 'rugarch'
+Creating a generic function from function 'ugarchpath' in package 'rugarch'
+Creating a generic function from function 'resume' in package 'rugarch'
+Creating a generic function from function 'ugarchroll' in package 'rugarch'
+Creating a generic function from function 'ugarchdistribution' in package 'rugarch'
+Creating a generic function from function 'ugarchboot' in package 'rugarch'
+Creating a generic function for 'plot' from package 'graphics' in package 'rugarch'
+Creating a generic function from function 'report' in package 'rugarch'
+Creating a generic function for 'coef' from package 'stats' in package 'rugarch'
+Creating a generic function for 'as.data.frame' from package 'base' in package 'rugarch'
+Creating a generic function for 'residuals' from package 'stats' in package 'rugarch'
+Creating a generic function from function 'sigma' in package 'rugarch'
+Creating a generic function from function 'nyblom' in package 'rugarch'
+Creating a generic function from function 'signbias' in package 'rugarch'
+Creating a generic function from function 'gof' in package 'rugarch'
+Creating a generic function from function 'infocriteria' in package 'rugarch'
+Creating a generic function from function 'likelihood' in package 'rugarch'
+Creating a generic function for 'fitted' from package 'stats' in package 'rugarch'
+Creating a generic function from function 'reduce' in package 'rugarch'
+Creating a generic function for 'quantile' from package 'stats' in package 'rugarch'
+Creating a generic function from function 'pit' in package 'rugarch'
+Creating a generic function from function 'newsimpact' in package 'rugarch'
+Creating a generic function from function 'halflife' in package 'rugarch'
+Creating a generic function from function 'persistence' in package 'rugarch'
+Creating a generic function from function 'uncvariance' in package 'rugarch'
+Creating a generic function from function 'uncmean' in package 'rugarch'
+Creating a generic function from function 'multispec' in package 'rugarch'
+Creating a generic function from function 'multifit' in package 'rugarch'
+Creating a generic function from function 'multifilter' in package 'rugarch'
+Creating a generic function from function 'multiforecast' in package 'rugarch'
+Creating a generic function from function 'fpm' in package 'rugarch'
+Creating a generic function from function 'convergence' in package 'rugarch'
+Creating a generic function for 'vcov' from package 'stats' in package 'rugarch'
+Creating a generic function from function 'arfimaspec' in package 'rugarch'
+Creating a generic function from function 'arfimafit' in package 'rugarch'
+Creating a generic function from function 'arfimafilter' in package 'rugarch'
+Creating a generic function from function 'arfimaforecast' in package 'rugarch'
+Creating a generic function from function 'arfimasim' in package 'rugarch'
+Creating a generic function from function 'arfimapath' in package 'rugarch'
+Creating a generic function from function 'arfimaroll' in package 'rugarch'
+Creating a generic function from function 'arfimadistribution' in package 'rugarch'
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+* DONE (rugarch)
