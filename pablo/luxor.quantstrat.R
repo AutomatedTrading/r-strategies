@@ -1,21 +1,23 @@
 library(quantstrat)
-
 suppressWarnings(try(rm(list=ls()),silent=TRUE))
-options(width=82,continue=" ")
-
-path <- "C:/Users/riosp/Google Drive/time_series/simulacion_acciones"
-
-forex.30min<-read.csv(paste(path,"forex.30min.csv",sep="/"), sep=",")
 
 oldTZ <- Sys.timezone()
 Sys.setenv(TZ="UTC")
 
-forex.30min<-as.xts(zoo(forex.30min[,c(2:5)]),as.POSIXct(forex.30min[,c(1)]))
+# path <- "C:/Users/riosp/Google Drive/time_series/simulacion_acciones"
+# forex.30min<-read.csv(paste(path,"forex.30min.csv",sep="/"), sep=",")
+# forex.30min<-as.xts(zoo(forex.30min[,c(2:5)]),as.POSIXct(forex.30min[,c(1)]))
+# names(forex.30min)<-c("GBPUSD.Open", "GBPUSD.High", "GBPUSD.Low", "GBPUSD.Close")
+# GBPUSD = to.minutes30(forex.30min)
+# GBPUSD = align.time(GBPUSD, 1800)
 
-names(forex.30min)<-c("GBPUSD.Open", "GBPUSD.High", "GBPUSD.Low", "GBPUSD.Close")
+.minutes <- 30
 
-GBPUSD = to.minutes30(forex.30min)
-GBPUSD = align.time(GBPUSD, 1800)
+path <- "C:/Users/riosp/Google Drive/time_series/simulacion_acciones"
+forex.1M<-read.csv(unz(paste(path,"DAT_GBPUSD_M1_2002_2008.zip",sep="/"),"DAT_GBPUSD_M1_2002_2008.csv"), sep=";", header=FALSE)
+forex.1M<-as.xts(zoo(forex.1M[,c(2:5)]),as.POSIXct(forex.1M[,c(1)], "%Y%m%d %H%M%S", tz="UTC"))
+GBPUSD = align.time(to.period(forex.1M, period='minutes', .minutes), .minutes*60)
+names(GBPUSD)<-c("Open", "High", "Low", "Close")
 
 #
 #
@@ -32,8 +34,8 @@ initDate = '2002-10-21'
 
 .from=initDate
 #.to='2002-10-26'
-#.to='2008-07-04'
-.to='2002-10-31' # fecha que usa el demo de quantstrat
+.to='2008-07-04'
+#.to='2002-10-31' # fecha que usa el demo de quantstrat
 
 GBPUSD<-GBPUSD[paste0(.from,'::',.to)]
 
@@ -53,17 +55,22 @@ account.st = 'invertironline'
 #Defino el costo de la transacción (simpre valores negativos)
 #
 
-.orderqty = 100000
+.orderqty = 30000
 .threshold = 0.0005
-.txnfees = -6
+# Luxor en el libro Trading Systems de Tomasini & Jaekle usa slippage+commission=30
+.txnfees = 0
 
 ###
 #
 #Defino las medias corta y larga segun 1er ejemplo del libro
 #
 
-.fast = 20
-.slow = 32
+# .fast = 10
+# .slow = 30
+
+# Segun libro Trading Systems de Tomasini & Jaekle, los parametros .fast = 1, .slow = 44
+.fast = 10
+.slow = 30
 
 ###
 #
@@ -238,12 +245,12 @@ myTheme$col$up.border <- 'lightgray'
 chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
 #chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
 
-View(t(tradeStats(portfolio.st, 'GBPUSD')))
+View(t(tradeStats(portfolio.st, 'GBPUSD')), "Summary")
 View(perTradeStats(portfolio.st, 'GBPUSD'))
 pf <- getPortfolio(portfolio.st)
 View(pf$symbols$GBPUSD$txn)
 View(pf$symbols$GBPUSD$posPL)
-mk <- mktdata['2002-10-23 15:00::2002-10-24 03:00']
+mk <- mktdata['2002-10-21 15:00::2002-10-31 03:00']
 View(mk)
 
 chart.TimeSeries(cumsum(pf$symbols$GBPUSD$posPL$Net.Trading.PL))
@@ -316,10 +323,6 @@ Sys.setenv(TZ=oldTZ)
 
 .FastSMA = (1:20)
 .SlowSMA = (30:80)
-
-.StopLoss = seq(0.05, 2.4, length.out=48)/100
-.StopTrailing = seq(0.05, 2.4, length.out=48)/100
-.TakeProfit = seq(0.1, 4.8, length.out=48)/100
 
 .FastWFA = c(1, 3, 5, 7, 9)
 .SlowWFA = c(42, 44, 46)
@@ -394,34 +397,11 @@ y <- as.numeric(colnames(z))
 filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
 title("Net Profit")
 
-# max draw down
-z <- tapply(X=stats[,"Max.Drawdown"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
-x <- as.numeric(rownames(z))
-y <- as.numeric(colnames(z))
-filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
-title("Max Drawdown")
-
-# profit factor
-z <- tapply(X=stats[,"Profit.Factor"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
-x <- as.numeric(rownames(z))
-y <- as.numeric(colnames(z))
-filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
-title("Profit Factor")
-
-# avg trade P&L
-z <- tapply(X=stats[,"Avg.Trade.PL"],INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
-x <- as.numeric(rownames(z))
-y <- as.numeric(colnames(z))
-filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
-title("Average Trade")
-
-# return to maxdd
-z <- tapply(X=stats[,"Profit.To.Max.Draw"],
-            INDEX=list(Fast=stats[,1],Slow=stats[,2]),FUN=sum)
-x <- as.numeric(rownames(z))
-y <- as.numeric(colnames(z))
-filled.contour(x=x,y=y,z=z,color = heat.colors,xlab="Fast MA",ylab="Slow MA")
-title("Return to Max Drawdown")
+# idem anterior para las siguientes variables
+# "Max.Drawdown"
+# "Profit.Factor"
+# "Avg.Trade.PL"
+# "Profit.To.Max.Draw"
 
 rmdd <- stats$Profit.To.Max.Draw
 idx <- order(rmdd,decreasing=T)[1:30]
@@ -432,3 +412,179 @@ barplot(rmdd[idx],names.arg=labs,col=4,las=2,main="Return to MaxDrawdown")
 ### parte 3) - Stoploss orders
 ###
 ### To implement stop-loss or trailing-stop orders, quantstrat utilizes the concept of ordersets and order chains
+rm.strat(strategy.st)
+strategy(strategy.st, store=TRUE)
+
+# stop loss amount
+.stoploss <- 0.30/100
+
+# trading window
+.timespan = 'T00:00/T23:59'
+
+add.indicator(strategy.st, name = "SMA",
+              arguments = list(
+                 x = quote(Cl(mktdata)[,1]),
+                 n = .fast
+              ),
+              label="nFast"
+)
+
+add.indicator(strategy.st, name="SMA",
+              arguments = list(
+                 x = quote(Cl(mktdata)[,1]),
+                 n = .slow
+              ),
+              label="nSlow"
+)
+
+add.signal(strategy.st, name='sigCrossover',
+           arguments = list(
+              columns=c("nFast","nSlow"),
+              relationship="gte"
+           ),
+           label='long'
+)
+
+add.signal(strategy.st, name='sigCrossover',
+           arguments = list(
+              columns=c("nFast","nSlow"),
+              relationship="lt"
+           ),
+           label='short'
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='long' , sigval=TRUE,
+                        replace=FALSE,
+                        orderside='long' ,
+                        ordertype='stoplimit',
+                        prefer='High',
+                        threshold=.threshold,
+                        TxnFees=0,
+                        orderqty=+.orderqty,
+                        osFUN=osMaxPos,
+                        orderset='ocolong'
+         ),
+         type='enter',
+         timespan = .timespan,
+         label='EnterLONG'
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='short', sigval=TRUE,
+                        replace=FALSE,
+                        orderside='short',
+                        ordertype='stoplimit',
+                        prefer='Low',
+                        threshold=.threshold,
+                        TxnFees=0,
+                        orderqty=-.orderqty,
+                        osFUN=osMaxPos,
+                        orderset='ocoshort'
+         ),
+         type='enter',
+         timespan = .timespan,
+         label='EnterSHORT'
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='short', sigval=TRUE,
+                        replace=TRUE,
+                        orderside='long' ,
+                        ordertype='market',
+                        TxnFees=.txnfees,
+                        orderqty='all',
+                        orderset='ocolong'
+         ),
+         type='exit',
+         timespan = .timespan,
+         label='Exit2SHORT'
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='long' , sigval=TRUE,
+                        replace=TRUE,
+                        orderside='short',
+                        ordertype='market',
+                        TxnFees=.txnfees,
+                        orderqty='all',
+                        orderset='ocoshort'
+         ),
+         type='exit',
+         timespan = .timespan,
+         label='Exit2LONG'
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='long' , sigval=TRUE,
+                        replace=FALSE,
+                        orderside='long',
+                        ordertype='stoplimit',
+                        tmult=TRUE,
+                        threshold=quote(.stoploss),
+                        TxnFees=.txnfees,
+                        orderqty='all',
+                        orderset='ocolong'
+         ),
+         type='chain', parent='EnterLONG',
+         label='StopLossLONG',
+         enabled=FALSE
+)
+
+add.rule(strategy.st, name = 'ruleSignal',
+         arguments=list(sigcol='short' , sigval=TRUE,
+                        replace=FALSE,
+                        orderside='short',
+                        ordertype='stoplimit',
+                        tmult=TRUE,
+                        threshold=quote(.stoploss),
+                        TxnFees=.txnfees,
+                        orderqty='all',
+                        orderset='ocoshort'
+         ),
+         type='chain', parent='EnterSHORT',
+         label='StopLossSHORT',
+         enabled=FALSE
+)
+
+# rm.strat(portfolio.st)
+# rm.strat(account.st)
+
+initPortf(portfolio.st, symbols='GBPUSD', initDate=initDate, currency='USD')
+addPosLimit(
+   portfolio=portfolio.st,
+   symbol='GBPUSD',
+   timestamp=initDate,
+   maxpos=.orderqty)
+
+initAcct(account.st, portfolios=portfolio.st,initDate=initDate,currency='USD')
+initOrders(portfolio.st, initDate=initDate)
+
+enable.rule('luxor', 'chain', 'StopLoss')
+
+out <- applyStrategy(strategy.st, portfolio.st)
+
+updatePortf(portfolio.st, Symbols='GBPUSD',
+            Dates=paste('::',as.Date(Sys.time()),sep=''))
+
+ob <- getOrderBook(portfolio.st)$forex$GBPUSD
+View(ob)
+
+myTheme<-chart_theme()
+myTheme$col$dn.col<-'lightblue'
+myTheme$col$dn.border <- 'lightgray'
+myTheme$col$up.border <- 'lightgray'
+
+chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
+
+View(t(tradeStats(portfolio.st, 'GBPUSD')))
+View(perTradeStats(portfolio.st, 'GBPUSD'))
+pf <- getPortfolio(portfolio.st)
+View(pf$symbols$GBPUSD$txn)
+View(pf$symbols$GBPUSD$posPL)
+mk <- mktdata['2002-10-23 15:00::2002-10-24 03:00']
+View(mk)
+
+chart.TimeSeries(cumsum(pf$symbols$GBPUSD$posPL$Net.Trading.PL))
+
+chart.ME(portfolio.st,'GBPUSD',type='MAE',scale='percent')
