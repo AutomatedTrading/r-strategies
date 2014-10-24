@@ -84,7 +84,6 @@ account.st = 'invertironline'
 rm.strat(portfolio.st)
 rm.strat(account.st)
 
-
 initPortf(portfolio.st, symbols='GBPUSD', initDate=initDate, currency='USD')
 initAcct(account.st, portfolios=portfolio.st, initDate=initDate, currency='USD')
 
@@ -243,7 +242,7 @@ myTheme$col$dn.border <- 'lightgray'
 myTheme$col$up.border <- 'lightgray'
 
 chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
-#chart.Posn(portfolio.st, "GBPUSD", Dates='2002-11-08::2002-11-11', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
+chart.Posn(portfolio.st, "GBPUSD", Dates='2002-10-29 12:00:00::2002-10-31 0:00:00', TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)")
 
 View(t(tradeStats(portfolio.st, 'GBPUSD')), "Summary")
 View(perTradeStats(portfolio.st, 'GBPUSD'))
@@ -368,6 +367,17 @@ if( Sys.info()['sysname'] == "Windows" )
   library(doParallel)
   registerDoParallel(cores=detectCores())
 }
+
+#library ("doRedis")
+#registerDoRedis ("jobs")
+#startLocalWorkers (n=4, queue = "jobs")
+#foreach ( icount (10) ,. combine = sum ,
+#            + . multicombine = TRUE ,. inorder = FALSE ) % dopar %
+#   + 4* sum (( runif (1000000)^2 + runif (1000000)^2) <1)/10000000
+#system.time(foreach(i=1:80, .combine=c) % dopar % sqrt(i))
+#removeQueue ("jobs")
+
+
 
 system.time(foreach(i=1:80, .combine=c) %dopar% sqrt(i))
 

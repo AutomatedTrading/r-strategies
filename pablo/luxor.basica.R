@@ -218,12 +218,11 @@ View(getOrderBook(portfolio.st)[[portfolio.st]]$GBPUSD)
 updatePortf(portfolio.st, Symbols='GBPUSD', Dates=paste('::',as.Date(Sys.time()),sep=''))
 
 ### grafico la serie, los 2 SMAs, las señales, order fill (hay un bug ???), el Profit/Loss acumulado, y el max drawdown
-### ESTE GRAFICO TARDA MUCHO EN RENDERIZARSE
-# myTheme<-chart_theme()
-# myTheme$col$dn.col<-'lightblue'
-# myTheme$col$dn.border <- 'lightgray'
-# myTheme$col$up.border <- 'lightgray'
-# chart.Posn(portfolio.st, "GBPUSD", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
+myTheme<-chart_theme()
+myTheme$col$dn.col<-'lightblue'
+myTheme$col$dn.border <- 'lightgray'
+myTheme$col$up.border <- 'lightgray'
+chart.Posn(portfolio.st, "GBPUSD", Dates="2002-12-19::2002-12-20", TA="add_SMA(n=10,col=2);add_SMA(n=30,col=4)", theme=myTheme)
 
 View(t(tradeStats(portfolio.st, 'GBPUSD')))
 

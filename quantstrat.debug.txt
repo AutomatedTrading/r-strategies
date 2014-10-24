@@ -1,0 +1,29 @@
+http://www.stats.uwo.ca/faculty/murdoch/software/debuggingR/debug.shtml
+
+applyRules calls --> debug(ruleOrderProc) calls --> addTxn()
+debug(addOrder) or trace(addOrder, tracer=browser)
+trace(updatePortf, tracer=browser)
+
+setBreakpoint("addOrder.R#20")
+	-- front end to trac(), default tracer is browser()
+	-- primero hay que hacer source("addOrder.R") ???
+
+undebug(addOrder)
+untrace(addOrder)
+
+trace(fun, quote(if (x > 10) browser())) -- conditional breakpoint
+
+
+### makes decisions based on current position, not open orders
+getPosLimit(portfolio=portfolio.st, symbol='GBPUSD', timestamp=as.POSIXct(initDate))
+
+addPosLimit(portfolio=portfolio.st, symbol='GBPUSD', timestamp=initDate, maxpos=.orderqty)
+
+addPosLimit(portfolio, symbol, timestamp, maxpos, longlevels = 1, minpos = -maxpos, shortlevels = longlevels)
+
+
+### manual debugging
+View(getOrderBook(portfolio.st)[[portfolio.st]]$GBPUSD['2002-10-28::']);getPosQty(portfolio.st,'GBPUSD',timestamp)
+
+View(getPortfolio(portfolio.st)$symbols$GBPUSD$txn)
+View(getPortfolio(portfolio.st)$symbols$GBPUSD$posPL) -- se llena al final con updatePorf()
